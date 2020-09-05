@@ -4,7 +4,7 @@
 	<groupId>inn.javahome</groupId>
 	<artifactId>springmvc</artifactId>
 	<packaging>war</packaging>
-	<version>0.0.4</version>
+	<version>0.0.5</version>
 	<name>springmvc Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	
