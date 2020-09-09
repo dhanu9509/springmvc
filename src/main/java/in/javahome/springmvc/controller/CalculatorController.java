@@ -12,7 +12,7 @@ public class CalculatorController {
 	@ResponseBody
 	public String addNumbers(@RequestParam("one") Integer i, 
 			                       @RequestParam(value="two", required=false) Integer j) {
-		string=null;;
+		
 		int result = i + j;
 		String resp = "Addition of " + i + " and " + j + " is " + result;
 		return resp;
