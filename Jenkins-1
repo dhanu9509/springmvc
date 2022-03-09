@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    tools {
+  maven 'maven-d'
+}
+
+
+    stages {
+        stage('git checkout') {
+            steps {
+                echo 'Hello World'
+                git credentialsId: 'github', url: 'https://github.com/dhanu9509/springmvc'
+            }
+        }
+        
+        stage('maven-build stage') {
+            steps {
+                echo 'Hello maven'
+                sh 'mvn clean package'
+            }
+        }
+        stage('deploy stage') {
+            steps {
+                echo 'Hello deploy'
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'tomcatnb', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''/opt/tomcat10/bin/shutdown.sh
+/opt/tomcat10/bin/startup.sh''', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '', remoteDirectorySDF: false, removePrefix: 'target/', sourceFiles: 'target/springmvc.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+            }
+        }
+    }
+}
