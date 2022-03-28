@@ -1,71 +1,29 @@
-currentBuild.displayName = currentBuild.projectName +"-${para}#" +currentBuild.number
-pipeline{
+pipeline {
     agent any
-    parameters {
-  choice choices: ['dev', 'uat', 'prod'], description: 'choose deployment environment', name: 'para'
-}
-
     tools {
-  maven 'mavan'
+  maven 'maven10'
 }
-
-    stages{
-        stage('paramstage'){
-            steps{
-                echo "this is from ${params.para} environment"
+    stages {
+        stage('git checkout') {
+            steps {
+                git branch: 'feature', url: 'https://github.com/dhanu9509/springmvc'
             }
         }
-        stage('parallel'){
-            parallel{
-                stage('one'){
-                    steps{
-                 echo  "1"
-                sleep   2
-                echo   "2"
-                sleep   2
-                echo    "3"
-                sleep   2
-                echo   "4"
-                    }
-                }
-            
-        stage('two'){
-            steps{
-                 echo "a"
-                sleep  2
-                echo  "b"
-                sleep  2
-                echo "c"
-                sleep 2
-                echo "d"
-                }
-              }
-            }
-        }
-        stage('displayname'){
-            steps{
-            echo currentBuild.displayName
-           
-}
-}
-  
-        stage('git checkout'){
-            steps{
-                git credentialsId: 'github', url: 'https://github.com/chnaveen112/springmvc'
-            }
-        }
-        stage('mvn build'){
+        stage('maven build'){
             steps{
                 sh 'mvn clean package'
             }
         }
-        stage('tomcat deploy'){
+        stage('nexus upload'){
             steps{
-                sshagent(['tomcat']) {
-    // some block
-    sh "scp target/springmvc.war ec2-user@172.31.9.71:/opt/tomcat8/webapps/"
-          }        
+                nexusArtifactUploader artifacts: [[artifactId: 'springmvc', classifier: '', file: 'target/springmvc.war', type: 'war']], credentialsId: 'nexus', groupId: 'inn.javahome', nexusUrl: '54.208.245.104:8081', nexusVersion: 'nexus2', protocol: 'http', repository: 'spingmvc-demo2', version: '2.0'
+            }
+        }
+        stage('deploy stage') {
+            steps {
+                echo 'Hello deploy'
+                sshPublisher(publishers: [sshPublisherDesc(configName: 'tomcatnb', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '/opt/tomcat10/webapps/', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '/var/lib/jenkins/workspace/dev-env/target/springmvc.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+            }
         }
     }
-  }
 }
